@@ -1,10 +1,10 @@
 {
-  "name": "github-readme-prs",
+  "name": "profile-readme-prs",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "update-readme": "node --env-file=.env index.ts"
   },
   "keywords": [],
   "author": "",
