@@ -12,7 +12,6 @@ on:
 jobs:
   update-readme:
     runs-on: ubuntu-latest
-    environment: prod
 
     steps:
       - name: Checkout repository
