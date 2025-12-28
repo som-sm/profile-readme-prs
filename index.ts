@@ -68,9 +68,7 @@ function generateMarkdown(
     md += `\n### 📦 ${repo.name}`;
 
     for (const pr of repo.prs) {
-      md += `\n- **${pr.title.replaceAll(/\*/g, "\\*")}** — [#${pr.number}](${
-        pr.url
-      })`;
+      md += `\n- ${pr.title} — [#${pr.number}](${pr.url})`;
     }
 
     if (repo.totalCount > PER_PAGE) {
