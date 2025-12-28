@@ -2,8 +2,8 @@ name: Update Profile README
 
 on:
   schedule:
-    # Every 5 minutes
-    - cron: "*/5 * * * *"
+    # Daily at 9:00 AM IST (03:30 UTC)
+    - cron: "30 3 * * *"
   push:
     branches:
       - main
