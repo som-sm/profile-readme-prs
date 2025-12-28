@@ -1,6 +1,6 @@
 import { Octokit } from "octokit";
 
-const TOKEN = process.env.GITHUB_TOKEN;
+const TOKEN = process.env.API_TOKEN;
 
 const USERNAME = "som-sm";
 const README_PATH = "README.md";
