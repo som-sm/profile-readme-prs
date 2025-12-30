@@ -25,12 +25,12 @@ const REPOS = [
 
 const octokit = new Octokit({ auth: TOKEN });
 
-async function fetchClosedPRs(repo: string): Promise<{
+async function fetchMergedPRs(repo: string): Promise<{
   prs: Array<{ title: string; number: number; url: string }>;
   totalCount: number;
 }> {
   const { data } = await octokit.request("GET /search/issues", {
-    q: `is:pr is:closed author:${USERNAME} repo:${repo}`,
+    q: `is:pr is:merged author:${USERNAME} repo:${repo}`,
     per_page: PER_PAGE,
     sort: "created",
     order: "desc",
@@ -46,8 +46,8 @@ async function fetchClosedPRs(repo: string): Promise<{
   };
 }
 
-function buildRepoClosedPrsUrl(repo: string) {
-  const q = `is:pr is:closed author:${USERNAME}`;
+function buildRepoMergedPrsUrl(repo: string) {
+  const q = `is:pr is:merged author:${USERNAME}`;
   return `https://github.com/${repo}/pulls?q=${encodeURIComponent(q)}`;
 }
 
@@ -74,7 +74,7 @@ function generateMarkdown(
     if (repo.totalCount > PER_PAGE) {
       const remaining = repo.totalCount - PER_PAGE;
       const plural = remaining === 1 ? "" : "s";
-      md += `\n\n [View ${remaining} more PR${plural}](${buildRepoClosedPrsUrl(
+      md += `\n\n [View ${remaining} more PR${plural}](${buildRepoMergedPrsUrl(
         repo.name
       )})`;
     }
@@ -102,7 +102,7 @@ async function updateReadme(readme: string, sha: string): Promise<void> {
     owner: USERNAME,
     repo: USERNAME,
     path: README_PATH,
-    message: "Update closed PRs section",
+    message: "Update merged PRs section",
     content: Buffer.from(readme).toString("base64"),
     sha,
   });
@@ -129,7 +129,7 @@ function getUpdatedReadme(readme: string, newContent: string): string {
 async function main() {
   const results = await Promise.all(
     REPOS.map(async (repo) => {
-      const { prs, totalCount } = await fetchClosedPRs(repo);
+      const { prs, totalCount } = await fetchMergedPRs(repo);
       return { name: repo, prs, totalCount };
     })
   );
