@@ -76,9 +76,9 @@ function generateMarkdown(
     if (repo.totalCount > PER_PAGE) {
       const remaining = repo.totalCount - PER_PAGE;
       const plural = remaining === 1 ? "" : "s";
-      md += `\n\n [View ${remaining} more PR${plural}](${buildRepoMergedPrsUrl(
+      md += `\n| [View ${remaining} more PR${plural}](${buildRepoMergedPrsUrl(
         repo.name,
-      )})`;
+      )}) | |`;
     }
   }
 
