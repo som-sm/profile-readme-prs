@@ -56,7 +56,7 @@ function generateMarkdown(
     name: string;
     prs: Array<{ title: string; number: number; url: string }>;
     totalCount: number;
-  }>
+  }>,
 ) {
   let md = "## 🧩 Open Source Contributions\n";
 
@@ -75,7 +75,7 @@ function generateMarkdown(
       const remaining = repo.totalCount - PER_PAGE;
       const plural = remaining === 1 ? "" : "s";
       md += `\n\n [View ${remaining} more PR${plural}](${buildRepoMergedPrsUrl(
-        repo.name
+        repo.name,
       )})`;
     }
   }
@@ -86,7 +86,7 @@ function generateMarkdown(
 async function getReadme(): Promise<{ readme: string; sha: string }> {
   const { data } = await octokit.request(
     "GET /repos/{owner}/{repo}/contents/{path}",
-    { owner: USERNAME, repo: USERNAME, path: README_PATH }
+    { owner: USERNAME, repo: USERNAME, path: README_PATH },
   );
 
   if (!Array.isArray(data) && data.type === "file") {
@@ -131,7 +131,7 @@ async function main() {
     REPOS.map(async (repo) => {
       const { prs, totalCount } = await fetchMergedPRs(repo);
       return { name: repo, prs, totalCount };
-    })
+    }),
   );
 
   const { readme, sha } = await getReadme();
