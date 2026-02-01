@@ -65,7 +65,7 @@ function generateMarkdown(
       continue;
     }
 
-    md += `\n### 📦 ${repo.name}`;
+    md += `\n\n### 📦 ${repo.name}`;
     md += `\n| PRs | |`;
     md += `\n| :--- | :--- |`;
 
