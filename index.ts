@@ -14,34 +14,59 @@ if (!TOKEN) {
   throw new Error("Missing GITHUB_TOKEN env var");
 }
 
+interface PullRequestInfo {
+  title: string;
+  number: number;
+  url: string;
+  additions: number;
+  deletions: number;
+}
+
 const REPOS = [
-  "sindresorhus/type-fest",
-  "ts-essentials/ts-essentials",
-  "orta/vscode-twoslash-queries",
-  "sindresorhus/eslint-plugin-unicorn",
-  "xojs/xo",
-  "DavidHDev/haiku",
+  { owner: "sindresorhus", repo: "type-fest" },
+  { owner: "ts-essentials", repo: "ts-essentials" },
+  { owner: "orta", repo: "vscode-twoslash-queries" },
+  { owner: "sindresorhus", repo: "eslint-plugin-unicorn" },
+  { owner: "xojs", repo: "xo" },
+  { owner: "DavidHDev", repo: "haiku" },
 ];
 
 const octokit = new Octokit({ auth: TOKEN });
 
-async function fetchMergedPRs(repo: string): Promise<{
-  prs: Array<{ title: string; number: number; url: string }>;
+async function fetchMergedPRs(repo: (typeof REPOS)[number]): Promise<{
+  prs: Array<PullRequestInfo>;
   totalCount: number;
 }> {
   const { data } = await octokit.request("GET /search/issues", {
-    q: `is:pr is:merged author:${USERNAME} repo:${repo}`,
+    q: `is:pr is:merged author:${USERNAME} repo:${repo.owner}/${repo.repo}`,
     per_page: PER_PAGE,
     sort: "created",
     order: "desc",
   });
 
+  const prs = await Promise.all(
+    data.items.map(async (item) => {
+      const { data: pr } = await octokit.request(
+        "GET /repos/{owner}/{repo}/pulls/{pull_number}",
+        {
+          owner: repo.owner,
+          repo: repo.repo,
+          pull_number: item.number,
+        },
+      );
+
+      return {
+        title: item.title,
+        number: item.number,
+        url: item.html_url,
+        additions: pr.additions,
+        deletions: pr.deletions,
+      };
+    }),
+  );
+
   return {
-    prs: data.items.map((item) => ({
-      title: item.title,
-      number: item.number,
-      url: item.html_url,
-    })),
+    prs,
     totalCount: data.total_count,
   };
 }
@@ -54,7 +79,7 @@ function buildRepoMergedPrsUrl(repo: string) {
 function generateMarkdown(
   repos: Array<{
     name: string;
-    prs: Array<{ title: string; number: number; url: string }>;
+    prs: Array<PullRequestInfo>;
     totalCount: number;
   }>,
 ) {
@@ -66,11 +91,13 @@ function generateMarkdown(
     }
 
     md += `\n\n### 📦 ${repo.name}`;
-    md += `\n| PRs | |`;
-    md += `\n| :--- | :--- |`;
+    md += `\n| PRs | | |`;
+    md += `\n| :--- | :--- | :--- |`;
 
     for (const pr of repo.prs) {
-      md += `\n| ${pr.title.replace(/\|/g, "\\|")} | [#${pr.number}](${pr.url}) |`;
+      md += `\n| ${pr.title.replace(/\|/g, "\\|")} | [#${pr.number}](${
+        pr.url
+      }) | $\\color{green}{+${pr.additions}}$  $\\color{red}{-${pr.deletions}}$ |`;
     }
 
     if (repo.totalCount > PER_PAGE) {
@@ -78,7 +105,7 @@ function generateMarkdown(
       const plural = remaining === 1 ? "" : "s";
       md += `\n| [View ${remaining} more PR${plural}](${buildRepoMergedPrsUrl(
         repo.name,
-      )}) | |`;
+      )}) | | |`;
     }
   }
 
@@ -132,7 +159,7 @@ async function main() {
   const results = await Promise.all(
     REPOS.map(async (repo) => {
       const { prs, totalCount } = await fetchMergedPRs(repo);
-      return { name: repo, prs, totalCount };
+      return { name: `${repo.owner}/${repo.repo}`, prs, totalCount };
     }),
   );
 
