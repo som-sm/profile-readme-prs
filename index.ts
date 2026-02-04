@@ -165,6 +165,13 @@ async function main() {
 
   const { readme, sha } = await getReadme();
   const updatedReadme = getUpdatedReadme(readme, generateMarkdown(results));
+
+  if (readme === updatedReadme) {
+    console.log("No changes detected, skipping update");
+    return;
+  }
+
+  console.log("Changes detected, updating README");
   await updateReadme(updatedReadme, sha);
 }
 
