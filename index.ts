@@ -40,7 +40,7 @@ async function fetchMergedPRs(repo: (typeof REPOS)[number]): Promise<{
   const { data } = await octokit.request("GET /search/issues", {
     q: `is:pr is:merged author:${USERNAME} repo:${repo.owner}/${repo.repo}`,
     per_page: PER_PAGE,
-    sort: "created",
+    sort: "updated",
     order: "desc",
   });
 
