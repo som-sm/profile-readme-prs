@@ -97,7 +97,7 @@ function generateMarkdown(
     for (const pr of repo.prs) {
       md += `\n| ${pr.title.replace(/\|/g, "\\|")} | [#${pr.number}](${
         pr.url
-      }) | $\\color{green}{+${pr.additions}}$  $\\color{red}{-${pr.deletions}}$ |`;
+      }) | $\\color{green}{+${pr.additions}}\\ \\ \\color{red}{-${pr.deletions}}$ |`;
     }
 
     if (repo.totalCount > PER_PAGE) {
