@@ -85,9 +85,13 @@ function generateMarkdown(
 ) {
   let md = "## 🧩 Open Source Contributions\n";
 
-  for (const repo of repos) {
+  for (const [index, repo] of repos.entries()) {
     if (repo.prs.length === 0) {
       continue;
+    }
+
+    if (index > 0) {
+      md += `\n<br>`;
     }
 
     const prsUrl = buildRepoMergedPrsUrl(repo.name);
