@@ -90,7 +90,9 @@ function generateMarkdown(
       continue;
     }
 
-    md += `\n\n### 📦 ${repo.name}`;
+    const prsUrl = buildRepoMergedPrsUrl(repo.name);
+    const starsBadge = `<img src="https://img.shields.io/github/stars/${repo.name}?style=flat-square&label=stars" alt="stars" align="center">`;
+    md += `\n\n### <a href="${prsUrl}">👉 ${repo.name} &nbsp;${starsBadge}</a>`;
     md += `\n| PRs | | |`;
     md += `\n| :--- | :--- | :--- |`;
 
