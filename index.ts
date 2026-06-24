@@ -95,9 +95,12 @@ function generateMarkdown(
     }
 
     const prsUrl = buildRepoMergedPrsUrl(repo.name);
+    const repoUrl = `https://github.com/${repo.name}`;
     // `label` is prefixed with a zero-width character because shields.io uppercases the first character by default
-    const starsBadge = `<img src="https://img.shields.io/github/stars/${repo.name}?label=%E2%80%8B${repo.name}&style=flat-square&logo=github" alt="${repo.name}" style="height:26px">`;
-    md += `\n\n<a href="${prsUrl}">${starsBadge}</a>`;
+    const starsBadge = `<img src="https://img.shields.io/github/stars/${repo.name}?label=%E2%80%8B${repo.name}&style=flat-square&logo=github" alt="${repo.name}" style="height:24px">`;
+    const mergedPrsBadge = `<img src="https://img.shields.io/badge/Merged%20PRs-${repo.totalCount}-blue?style=flat-square" alt="Merged PRs" style="height:24px"/>`;
+    md += `\n\n<a href="${repoUrl}">${starsBadge}</a> <a href="${prsUrl}">${mergedPrsBadge}</a>`;
+
     md += `\n| PRs | | |`;
     md += `\n| :--- | :--- | :--- |`;
 
