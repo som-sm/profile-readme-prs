@@ -34,7 +34,7 @@ const REPOS = [
 
 const PINNED_PRS_PER_REPO: Record<string, number[]> = {
   "sindresorhus/type-fest": [
-    1396, 1364, 1347, 1343, 1309, 1300, 1324, 1265, 1044,
+    1265, 1300, 1309, 1364, 1347, 1396, 1343, 1324, 1044,
   ],
 };
 
