@@ -20,6 +20,7 @@ interface PullRequestInfo {
   url: string;
   additions: number;
   deletions: number;
+  pinned: boolean;
 }
 
 const REPOS = [
@@ -31,36 +32,53 @@ const REPOS = [
   { owner: "DavidHDev", repo: "haiku" },
 ];
 
+const PINNED_PRS_PER_REPO: Record<string, number[]> = {
+  "sindresorhus/type-fest": [
+    1396, 1364, 1347, 1343, 1309, 1300, 1324, 1265, 1044,
+  ],
+};
+
 const octokit = new Octokit({ auth: TOKEN });
 
 async function fetchMergedPRs(repo: (typeof REPOS)[number]): Promise<{
   prs: Array<PullRequestInfo>;
   totalCount: number;
 }> {
+  const repoFullName = `${repo.owner}/${repo.repo}`;
+  const pinnedPRNumbers = PINNED_PRS_PER_REPO[repoFullName] ?? [];
+
   const { data } = await octokit.request("GET /search/issues", {
-    q: `is:pr is:merged author:${USERNAME} repo:${repo.owner}/${repo.repo}`,
+    q: `is:pr is:merged author:${USERNAME} repo:${repoFullName}`,
     per_page: PER_PAGE,
     sort: "updated",
     order: "desc",
   });
 
+  const prNumbers = [
+    ...pinnedPRNumbers,
+    ...data.items
+      .filter((item) => !pinnedPRNumbers.includes(item.number))
+      .map(({ number }) => number),
+  ].slice(0, Math.max(pinnedPRNumbers.length, PER_PAGE));
+
   const prs = await Promise.all(
-    data.items.map(async (item) => {
+    prNumbers.map(async (prNumber) => {
       const { data: pr } = await octokit.request(
         "GET /repos/{owner}/{repo}/pulls/{pull_number}",
         {
           owner: repo.owner,
           repo: repo.repo,
-          pull_number: item.number,
+          pull_number: prNumber,
         },
       );
 
       return {
-        title: item.title,
-        number: item.number,
-        url: item.html_url,
+        title: pr.title,
+        number: pr.number,
+        url: pr.html_url,
         additions: pr.additions,
         deletions: pr.deletions,
+        pinned: pinnedPRNumbers.includes(pr.number),
       };
     }),
   );
@@ -105,13 +123,14 @@ function generateMarkdown(
     md += `\n| :--- | :--- | :--- |`;
 
     for (const pr of repo.prs) {
-      md += `\n| ${pr.title.replace(/\|/g, "\\|")} | [#${pr.number}](${
+      const pin = pr.pinned ? "📌 " : "";
+      md += `\n| ${pin}${pr.title.replace(/\|/g, "\\|")} | [#${pr.number}](${
         pr.url
       }) | $\\color{green}{+${pr.additions}}\\ \\ \\color{red}{-${pr.deletions}}$ |`;
     }
 
-    if (repo.totalCount > PER_PAGE) {
-      const remaining = repo.totalCount - PER_PAGE;
+    if (repo.totalCount > repo.prs.length) {
+      const remaining = repo.totalCount - repo.prs.length;
       const plural = remaining === 1 ? "" : "s";
       md += `\n| [View ${remaining} more PR${plural}](${buildRepoMergedPrsUrl(
         repo.name,
