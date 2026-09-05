@@ -197,7 +197,7 @@ async function main() {
 
   if (readme === updatedReadme) {
     console.log("No changes detected, skipping update");
-    return;
+    // return;
   }
 
   console.log("Changes detected, updating README");
